@@ -41,7 +41,8 @@ public class UpdaterService extends IntentService {
             return;
         }
 
-        sendStickyBroadcast(
+        // sendStickyBroadcast(
+        sendBroadcast(
                 new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, true));
 
         // Don't even inspect the intent, we only do one thing, and that's fetch content.
@@ -82,7 +83,8 @@ public class UpdaterService extends IntentService {
             Log.e(TAG, "Error updating content.", e);
         }
 
-        sendStickyBroadcast(
+        //sendStickyBroadcast(
+        sendBroadcast(
                 new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, false));
 
 //        sendStickyBroadcast()

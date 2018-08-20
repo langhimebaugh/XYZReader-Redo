@@ -1,6 +1,9 @@
 package com.himebaugh.xyzreader;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,31 +15,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
-import android.text.format.DateUtils;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
+import com.himebaugh.xyzreader.adapter.ArticleListAdapter;
 import com.himebaugh.xyzreader.data.ArticleLoader;
 import com.himebaugh.xyzreader.data.ItemsContract;
 import com.himebaugh.xyzreader.data.UpdaterService;
-import com.squareup.picasso.Picasso;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class ArticleListActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+public class ArticleListActivity extends AppCompatActivity
+        implements
+        LoaderManager.LoaderCallbacks<Cursor>,
+        ArticleListAdapter.OnClickHandler,
+        SwipeRefreshLayout.OnRefreshListener {
+
+    private static int LOADER_ID = 0;
 
     private static final String TAG = ArticleListActivity.class.getSimpleName();
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
+
+    private ArticleListAdapter mAdapter;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -52,11 +54,17 @@ public class ArticleListActivity extends AppCompatActivity implements
         mToolbar = findViewById(R.id.toolbar);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mRecyclerView = findViewById(R.id.recycler_view);
 
+        // Initialize the adapter and attach it to the RecyclerView
+        mAdapter = new ArticleListAdapter(this);
+        mAdapter.setHasStableIds(true);   // ?????
+        mRecyclerView.setAdapter(mAdapter);
+
         // Start the loader which loads from the database.
-        getSupportLoaderManager().initLoader(0, null, this);
+        getSupportLoaderManager().initLoader(LOADER_ID, null, this);
 
         if (savedInstanceState == null) {
             refresh();
@@ -66,6 +74,37 @@ public class ArticleListActivity extends AppCompatActivity implements
     // retrieves json from internet
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiver(mRefreshingReceiver, new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(mRefreshingReceiver);
+    }
+
+    private boolean mIsRefreshing = false;
+
+    private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Log.i(TAG, "onReceive: ");
+            
+            if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
+                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                updateRefreshingUI();
+            }
+        }
+    };
+
+    private void updateRefreshingUI() {
+        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
     @NonNull
@@ -78,9 +117,10 @@ public class ArticleListActivity extends AppCompatActivity implements
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
 
-        Adapter adapter = new Adapter(data);
-        adapter.setHasStableIds(true);
-        mRecyclerView.setAdapter(adapter);
+//        ArticleListAdapter adapter = new ArticleListAdapter(data, this);
+//        adapter.setHasStableIds(true);
+//        mRecyclerView.setAdapter(adapter);
+        mAdapter.loadArticles(data);
 
         // change depending on device layout
         int columnCount = getResources().getInteger(R.integer.list_column_count);
@@ -90,7 +130,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setLayoutManager(staggeredGridLayoutManager);
 
         Log.i(TAG, "onLoadFinished: data=" + data.getCount());
-
     }
 
     @Override
@@ -98,89 +137,24 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(null);
     }
 
-    private class Adapter extends RecyclerView.Adapter<ViewHolder> {
-        private Cursor mCursor;
+    @Override
+    public void onClick(int position, long id) {
 
-        public Adapter(Cursor cursor) {
-            mCursor = cursor;
-        }
+        Log.i(TAG, "onClick: ");
+        Log.i(TAG, "position: "+position);
+        Log.i(TAG, "id: "+id);
 
-        @Override
-        public long getItemId(int position) {
-            mCursor.moveToPosition(position);
-            return mCursor.getLong(ArticleLoader.Query._ID);
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
-            final ViewHolder vh = new ViewHolder(view);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
-                }
-            });
-            return vh;
-        }
-
-        private Date parsePublishedDate() {
-            try {
-                String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
-                return dateFormat.parse(date);
-            } catch (ParseException ex) {
-                Log.e(TAG, ex.getMessage());
-                Log.i(TAG, "passing today's date");
-                return new Date();
-            }
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-
-            mCursor.moveToPosition(position);
-
-            holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-
-            Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-
-                holder.subtitleView.setText(Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-            } else {
-                holder.subtitleView.setText(Html.fromHtml(
-                        outputFormat.format(publishedDate)
-                                + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-            }
-
-            String imageURL = mCursor.getString(ArticleLoader.Query.THUMB_URL);
-
-            Picasso.get().load(imageURL).into(holder.thumbnailView);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mCursor.getCount();
-        }
+        Intent intent = new Intent(Intent.ACTION_VIEW, ItemsContract.Items.buildItemUri(position));
+        startActivity(intent);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ImageView thumbnailView;
-        public TextView titleView;
-        public TextView subtitleView;
+    @Override
+    public void onRefresh() {
+        Log.i(TAG, "onRefresh: Trigger reloading data");
 
-        public ViewHolder(View view) {
-            super(view);
-            thumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
-            titleView = (TextView) view.findViewById(R.id.article_title);
-            subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
-        }
+        // getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+
+        refresh();
     }
+
 }
