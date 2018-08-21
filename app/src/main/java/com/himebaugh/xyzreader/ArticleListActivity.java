@@ -134,6 +134,7 @@ public class ArticleListActivity extends AppCompatActivity
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+
         mRecyclerView.setAdapter(null);
     }
 
