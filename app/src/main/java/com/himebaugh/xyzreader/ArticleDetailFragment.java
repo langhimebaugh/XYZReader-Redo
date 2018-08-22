@@ -2,23 +2,16 @@ package com.himebaugh.xyzreader;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.ColorInt;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
-import android.support.v7.graphics.Palette;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.himebaugh.xyzreader.data.ArticleLoader;
 import com.squareup.picasso.Picasso;
 
@@ -35,10 +26,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.NavUtils;
 /**
  * A fragment representing a single Article detail screen. This fragment is
  * either contained in a {@link ArticleListActivity} in two-pane mode (on
@@ -49,14 +36,10 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
     public static final String ARG_ITEM_ID = "item_id";
 
-    private CollapsingToolbarLayout collapsingToolbarLayout;
-    private Toolbar toolbar;
-
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-
-    private ImageView mPhotoView;
+    CollapsingToolbarLayout mCollapsingToolbarLayout;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -102,13 +85,33 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         // the fragment's onCreate may cause the same LoaderManager to be dealt to multiple
         // fragments because their mIndex is -1 (haven't been added to the activity yet). Thus,
         // we do this in onActivityCreated.
-        getLoaderManager().initLoader(0, null, this);
+
+        getLoaderManager().initLoader(103, null, this);
+
+        // getActivity().getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+
+        Toolbar toolbar = mRootView.findViewById(R.id.toolbar);
+        mCollapsingToolbarLayout = mRootView.findViewById(R.id.toolbar_layout);
+
+        // https://stackoverflow.com/questions/25037356/getsupportactionbar-not-available-in-fragment-workaround-leads-to-nullpointere/25037502
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Implemented Up Navigation in AndroidManifest but seems inconsistent.
+        // Can't determine why.
+        // This helps
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().onBackPressed();
+            }
+        });
 
         bindViews();
 
@@ -131,29 +134,17 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             return;
         }
 
-        mPhotoView =            mRootView.findViewById(R.id.photo);
+        ImageView photoView = mRootView.findViewById(R.id.photo);
         //mPhotoContainerView =   mRootView.findViewById(R.id.photo_container);
-
         TextView titleView =    mRootView.findViewById(R.id.article_title);
         TextView bylineView =   mRootView.findViewById(R.id.article_byline);
         TextView bodyView =     mRootView.findViewById(R.id.article_body);
 
-        toolbar = mRootView.findViewById(R.id.toolbar);
-        collapsingToolbarLayout = mRootView.findViewById(R.id.toolbar_layout);
-
-        // https://stackoverflow.com/questions/25037356/getsupportactionbar-not-available-in-fragment-workaround-leads-to-nullpointere/25037502
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         if (mCursor != null) {
 
-            mRootView.setAlpha(0);
-            mRootView.setVisibility(View.VISIBLE);
-            mRootView.animate().alpha(1);
+            mCollapsingToolbarLayout.setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
 
-            collapsingToolbarLayout.setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
-
-            Picasso.get().load(mCursor.getString(ArticleLoader.Query.PHOTO_URL)).into(mPhotoView);
+            Picasso.get().load(mCursor.getString(ArticleLoader.Query.PHOTO_URL)).into(photoView);
 
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
 
@@ -178,14 +169,50 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
             }
 
+            // FULL TEXT HERE...
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
 
-        } else {
-            mRootView.setVisibility(View.GONE);
-            titleView.setText("N/A");
-            bylineView.setText("N/A");
-            bodyView.setText("N/A");
+            // TRUNCATED TEXT HERE... to speed up...
+//            String bodyString = mCursor.getString(ArticleLoader.Query.BODY);
+//            bodyString = bodyString.substring(0, Math.min(bodyString.length(), 50000));
+//            bodyString.replaceAll("(\r\n|\n)", "<br />");
+//            bodyView.setText(Html.fromHtml(bodyString));
         }
+
+
+
+        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+
+            String shareTitle = "";
+            String shareBody = "";
+
+            @Override
+            public void onClick(View view) {
+
+                if (mCursor != null) {
+                    shareTitle = mCursor.getString(ArticleLoader.Query.TITLE);
+                    // Limit size of text to share...
+                    // Caused by: android.os.TransactionTooLargeException: data parcel size 1161216 bytes
+                    shareBody = mCursor.getString(ArticleLoader.Query.BODY);
+                    // upTo 50,000 Characters
+                    // https://stackoverflow.com/questions/1583940/how-do-i-get-the-first-n-characters-of-a-string-without-checking-the-size-or-goi/1583968
+                    shareBody = shareBody.substring(0, Math.min(shareBody.length(), 5000));
+                }
+
+                // https://medium.com/google-developers/sharing-content-between-android-apps-2e6db9d1368b
+
+                Intent shareIntent = ShareCompat.IntentBuilder.from(getActivity())
+                        .setType("text/plain")
+                        .setSubject(shareTitle)
+                        .setText(shareBody)
+                        .setChooserTitle(R.string.action_share)
+                        .getIntent();
+                if (shareIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(Intent.createChooser(shareIntent, getString(R.string.action_share)));
+                }
+            }
+        });
+
     }
 
     @Override

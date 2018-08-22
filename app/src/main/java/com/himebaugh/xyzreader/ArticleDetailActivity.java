@@ -1,15 +1,12 @@
 package com.himebaugh.xyzreader;
 
-
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.himebaugh.xyzreader.adapter.ArticlePagerAdapter;
@@ -21,12 +18,12 @@ import com.himebaugh.xyzreader.data.ItemsContract;
  */
 public class ArticleDetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String TAG = ArticleDetailActivity.class.getSimpleName();
+
     private Cursor mCursor;
     private long mStartId;
 
-    private long mSelectedItemId;
-    private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
-    private int mTopInset;
+    private int mSelectedItemId;
 
     private ViewPager mPager;
     private ArticlePagerAdapter mPagerAdapter;
@@ -41,7 +38,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
         }
         setContentView(R.layout.activity_article_detail);
 
-        getSupportLoaderManager().initLoader(0, null, this);
+        getSupportLoaderManager().initLoader(102, null, this);
 
         mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
 
@@ -51,7 +48,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().getData() != null) {
                 mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-                mSelectedItemId = mStartId;
+                mSelectedItemId = (int) mStartId;
             }
         }
     }
@@ -81,8 +78,8 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
             }
             mStartId = 0;
 
-            // USE TO SET CURRENT ITEM TO ITEM CLICKED
-            mPager.setCurrentItem(2, false);
+            // SET CURRENT ITEM TO ITEM CLICKED
+            mPager.setCurrentItem(mSelectedItemId, false);
         }
     }
 

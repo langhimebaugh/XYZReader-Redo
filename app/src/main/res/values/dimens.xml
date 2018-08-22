@@ -25,4 +25,6 @@
     <dimen name="detail_body_top_margin">16dp</dimen>
     <dimen name="detail_body_bottom_margin">88dp</dimen>
 
+    <dimen name="app_bar_height">280dp</dimen>
+
 </resources>

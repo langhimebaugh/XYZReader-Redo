@@ -56,8 +56,7 @@ public class ArticleListAdapter extends RecyclerView.Adapter<ArticleListAdapter.
     public ListItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
 
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_article, viewGroup, false);
-        ListItemViewHolder viewHolder = new ListItemViewHolder(view);
-        return viewHolder;
+        return new ListItemViewHolder(view);
     }
 
     private Date parsePublishedDate() {

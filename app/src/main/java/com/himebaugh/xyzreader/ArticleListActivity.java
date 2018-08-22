@@ -25,13 +25,37 @@ import com.himebaugh.xyzreader.data.UpdaterService;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 
+// TODO: Tablet Layout, Material Fonts, Text spacing, Elevations
+
+// COMPLETED: App theme extends from AppCompat.
+//
+// COMPLETED: App uses the Design Support library and its provided widget types (FloatingActionButton, AppBarLayout, SnackBar, etc).
+//
+// COMPLETED: App uses CoordinatorLayout for the main Activity.
+//
+// COMPLETED: App uses an AppBar and associated Toolbars.
+//
+// COMPLETED: App provides a Floating Action Button for the most common action(s).
+//
+// TODO: App properly specifies elevations for app bars, FABs, and other elements specified in the Material Design specification.
+//
+// COMPLETED: App has a consistent color theme defined in styles.xml. Color theme does not impact usability of the app.
+//
+// TODO: App provides sufficient space between text and surrounding elements.
+//
+// COMPLETED: App uses images that are high quality, specific, and full bleed.
+//
+// TODO: App uses fonts that are either the Android defaults, are complementary, and aren't otherwise distracting.
+//
+// TODO: App conforms to common standards found in the Android Nanodegree General Project Guidelines.
+//
+// COMPLETED: App utilizes stable release versions of all libraries, Gradle, and Android Studio.
+
 public class ArticleListActivity extends AppCompatActivity
         implements
         LoaderManager.LoaderCallbacks<Cursor>,
         ArticleListAdapter.OnClickHandler,
         SwipeRefreshLayout.OnRefreshListener {
-
-    private static int LOADER_ID = 0;
 
     private static final String TAG = ArticleListActivity.class.getSimpleName();
     private Toolbar mToolbar;
@@ -60,11 +84,11 @@ public class ArticleListActivity extends AppCompatActivity
 
         // Initialize the adapter and attach it to the RecyclerView
         mAdapter = new ArticleListAdapter(this);
-        mAdapter.setHasStableIds(true);   // ?????
+        mAdapter.setHasStableIds(true);   // not sure what this does?
         mRecyclerView.setAdapter(mAdapter);
 
         // Start the loader which loads from the database.
-        getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+        getSupportLoaderManager().initLoader(101, null, this);
 
         if (savedInstanceState == null) {
             refresh();
@@ -117,9 +141,6 @@ public class ArticleListActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
 
-//        ArticleListAdapter adapter = new ArticleListAdapter(data, this);
-//        adapter.setHasStableIds(true);
-//        mRecyclerView.setAdapter(adapter);
         mAdapter.loadArticles(data);
 
         // change depending on device layout
@@ -144,6 +165,7 @@ public class ArticleListActivity extends AppCompatActivity
         Log.i(TAG, "onClick: ");
         Log.i(TAG, "position: "+position);
         Log.i(TAG, "id: "+id);
+        Log.i(TAG, "ItemsContract.Items.buildItemUri(position): " + ItemsContract.Items.buildItemUri(position));
 
         Intent intent = new Intent(Intent.ACTION_VIEW, ItemsContract.Items.buildItemUri(position));
         startActivity(intent);
@@ -152,8 +174,6 @@ public class ArticleListActivity extends AppCompatActivity
     @Override
     public void onRefresh() {
         Log.i(TAG, "onRefresh: Trigger reloading data");
-
-        // getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
 
         refresh();
     }
