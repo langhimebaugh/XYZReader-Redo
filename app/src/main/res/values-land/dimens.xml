@@ -1,0 +1,10 @@
+<resources>
+    <!-- list -->
+    <integer name="list_column_count">3</integer>
+    <dimen name="list_image_padding_top">0dp</dimen>
+    <dimen name="list_app_bar_height">120dp</dimen>
+
+    <!-- detail -->
+    <dimen name="detail_app_bar_height">110dp</dimen>
+
+</resources>

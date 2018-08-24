@@ -1,0 +1,13 @@
+<resources>
+    <!-- list -->
+    <integer name="list_column_count">3</integer>
+    <dimen name="list_side_margin">12dp</dimen>
+    <dimen name="list_item_margin">12dp</dimen>
+    <dimen name="list_logo_left_margin">24dp</dimen>
+    <dimen name="list_image_padding_top">100dp</dimen>
+    <dimen name="list_app_bar_height">168dp</dimen>
+
+    <!-- detail -->
+    <dimen name="detail_app_bar_height">256dp</dimen>
+
+</resources>

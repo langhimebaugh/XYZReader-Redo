@@ -66,7 +66,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
+        if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
@@ -87,8 +87,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         // we do this in onActivityCreated.
 
         getLoaderManager().initLoader(103, null, this);
-
-        // getActivity().getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -135,8 +133,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         }
 
         ImageView photoView = mRootView.findViewById(R.id.photo);
-        //mPhotoContainerView =   mRootView.findViewById(R.id.photo_container);
-        TextView titleView =    mRootView.findViewById(R.id.article_title);
+
         TextView bylineView =   mRootView.findViewById(R.id.article_byline);
         TextView bodyView =     mRootView.findViewById(R.id.article_body);
 
@@ -146,8 +143,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
             Picasso.get().load(mCursor.getString(ArticleLoader.Query.PHOTO_URL)).into(photoView);
 
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-
             Date publishedDate = parsePublishedDate();
 
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
@@ -156,29 +151,27 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                                 publishedDate.getTime(),
                                 System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
                                 DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + " by <font color='#ffffff'>"
+                                + " by "
                                 + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                                + "</font>"));
+                                ));
 
             } else {
                 // If date is before 1902, just show the string
                 bylineView.setText(Html.fromHtml(
-                        outputFormat.format(publishedDate) + " by <font color='#ffffff'>"
+                        outputFormat.format(publishedDate) + " by "
                                 + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                                + "</font>"));
+                                ));
 
             }
 
-            // FULL TEXT HERE...
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
 
-            // TRUNCATED TEXT HERE... to speed up...
-//            String bodyString = mCursor.getString(ArticleLoader.Query.BODY);
-//            bodyString = bodyString.substring(0, Math.min(bodyString.length(), 50000));
-//            bodyString.replaceAll("(\r\n|\n)", "<br />");
-//            bodyView.setText(Html.fromHtml(bodyString));
+            String bodyString = mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />");
+
+            // TRUNCATED TEXT HERE... to speed up for testing...
+            // bodyString = bodyString.substring(0, Math.min(bodyString.length(), 50000));
+
+            bodyView.setText(Html.fromHtml(bodyString));
         }
-
 
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {

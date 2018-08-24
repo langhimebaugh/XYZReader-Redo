@@ -25,7 +25,16 @@ import com.himebaugh.xyzreader.data.UpdaterService;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 
-// TODO: Tablet Layout, Material Fonts, Text spacing, Elevations
+
+// COMPLETED: Recommended:
+// http://udacity.github.io/android-nanodegree-guidelines/tablet.html
+// Lines of text should not be excessively long — optimize for a maximum 100 characters per line, with best results between 50 and 75.
+// ListViews and Menus should not use the full screen width.
+// Padding of UI elements should normally be larger on tablets than on handsets.
+// Adequately pad text content so that it is not aligned directly along screen edges.
+// Use a minimum 16dp padding around content near screen edges.
+// At a minimum, customize dimensions such as font sizes, margins, spacing for larger screens, to improve use of space and content legibility.
+// Provide custom layouts as needed for large and xlarge screens.
 
 // COMPLETED: App theme extends from AppCompat.
 //
@@ -37,17 +46,17 @@ import java.util.GregorianCalendar;
 //
 // COMPLETED: App provides a Floating Action Button for the most common action(s).
 //
-// TODO: App properly specifies elevations for app bars, FABs, and other elements specified in the Material Design specification.
+// COMPLETED: App properly specifies elevations for app bars, FABs, and other elements specified in the Material Design specification.
 //
 // COMPLETED: App has a consistent color theme defined in styles.xml. Color theme does not impact usability of the app.
 //
-// TODO: App provides sufficient space between text and surrounding elements.
+// COMPLETED: App provides sufficient space between text and surrounding elements.
 //
 // COMPLETED: App uses images that are high quality, specific, and full bleed.
 //
-// TODO: App uses fonts that are either the Android defaults, are complementary, and aren't otherwise distracting.
+// COMPLETED: App uses fonts that are either the Android defaults, are complementary, and aren't otherwise distracting.
 //
-// TODO: App conforms to common standards found in the Android Nanodegree General Project Guidelines.
+// COMPLETED: App conforms to common standards found in the Android Nanodegree General Project Guidelines.
 //
 // COMPLETED: App utilizes stable release versions of all libraries, Gradle, and Android Studio.
 
