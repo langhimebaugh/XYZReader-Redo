@@ -42,7 +42,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
 
         mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
 
-        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
 
         if (savedInstanceState == null) {

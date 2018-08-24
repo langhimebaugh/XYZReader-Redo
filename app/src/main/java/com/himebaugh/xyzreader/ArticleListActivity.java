@@ -22,9 +22,6 @@ import com.himebaugh.xyzreader.data.ArticleLoader;
 import com.himebaugh.xyzreader.data.ItemsContract;
 import com.himebaugh.xyzreader.data.UpdaterService;
 
-import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
-
 
 // COMPLETED: Recommended:
 // http://udacity.github.io/android-nanodegree-guidelines/tablet.html
@@ -72,12 +69,6 @@ public class ArticleListActivity extends AppCompatActivity
     private RecyclerView mRecyclerView;
 
     private ArticleListAdapter mAdapter;
-
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
-    // Use default locale format
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
-    // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

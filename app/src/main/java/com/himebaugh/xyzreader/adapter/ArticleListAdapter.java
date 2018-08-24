@@ -131,9 +131,9 @@ public class ArticleListAdapter extends RecyclerView.Adapter<ArticleListAdapter.
 
         private ListItemViewHolder(View view) {
             super(view);
-            thumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
-            titleView = (TextView) view.findViewById(R.id.article_title);
-            subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
+            thumbnailView = view.findViewById(R.id.thumbnail);
+            titleView = view.findViewById(R.id.article_title);
+            subtitleView = view.findViewById(R.id.article_subtitle);
 
             view.setOnClickListener(this);
         }
